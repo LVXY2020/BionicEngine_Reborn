@@ -1,0 +1,29 @@
+{
+    "name": "App.Combat",
+    "rootNamespace": "",
+    "references": [
+        "GUID:e206b10f66d2de54eb9786f35b7401ed",
+        "GUID:b0214a6008ed146ff8f122a6a9c2f6cc",
+        "GUID:77221876cc6b8244180b96e320b1bcd4",
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:734d92eba21c94caba915361bd5ac177",
+        "GUID:46fe9b4ef94d76744bc0b97bc2f73d94",
+        "GUID:59e15be979a1f934cac2dcd97dd0ea2b",
+        "GUID:2de22fb7141426546b7382812669d73f",
+        "GUID:d8b63aba1907145bea998dd612889d6b",
+        "GUID:e0cd26848372d4e5c891c569017e11f1",
+        "GUID:8819f35a0fc84499b990e90a4ca1911f",
+        "GUID:2665a8d13d1b3f18800f46e256720795",
+        "GUID:a5baed0c9693541a5bd947d336ec7659",
+        "GUID:11912cc675165314485c904ed61b2e92"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
