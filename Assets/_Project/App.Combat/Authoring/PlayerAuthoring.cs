@@ -27,6 +27,11 @@ namespace App.Combat
                 // 2. 注入自研仿生雷达基因
                 AddComponent(entity, new BionicShape { Radius = authoring.Radius });
                 AddComponent(entity, new BionicBody { Velocity = Unity.Mathematics.float3.zero });
+                AddComponent(entity, new BionicSteering
+                {
+                    TargetPosition = Unity.Mathematics.float3.zero,
+                    DesiredVelocity = Unity.Mathematics.float3.zero
+                });
                 
                 // 🌟 赋予主角极其恐怖的质量
                 AddComponent(entity, new BionicLocomotion 

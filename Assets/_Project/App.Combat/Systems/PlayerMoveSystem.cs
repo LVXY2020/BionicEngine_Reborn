@@ -43,15 +43,10 @@ namespace App.Combat
                 body.Velocity = float3.zero;
             }
 
-            // 3. 绝对空间位移：玩家不受尸潮推挤，直接修改坐标矩阵
-            transform.Position += body.Velocity * DeltaTime;
+            // 3. 运动意图只写入速度，最终位移交给统一的仿生整合系统处理
+            body.Velocity = new float3(body.Velocity.x, 0f, body.Velocity.z);
 
-            // 4. 骨骼平滑转向：使用球面线性插值 (Slerp) 确保模型转身丝滑，不瞬拍
-            if (math.lengthsq(body.Velocity) > 0.01f)
-            {
-                quaternion targetRotation = quaternion.LookRotationSafe(body.Velocity, math.up());
-                transform.Rotation = math.slerp(transform.Rotation, targetRotation, DeltaTime * 15f);
-            }
+            // 4. 这里仅负责输入转速度，不直接推进位置，避免与 BionicIntegrationSystem 抢写坐标
         }
     }
 }

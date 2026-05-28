@@ -21,6 +21,9 @@ namespace App.Combat
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
+            // 只有场上存在 BionicSteering 的实体时，避障系统才需要工作
+            state.RequireForUpdate<BionicSteering>();
+
             _bodyLookup = state.GetComponentLookup<BionicBody>(true);
             _shapeLookup = state.GetComponentLookup<BionicShape>(true);
             _locoLookup = state.GetComponentLookup<BionicLocomotion>(true);
@@ -40,6 +43,7 @@ namespace App.Combat
             _locoLookup.Update(ref state);
             _transformLookup.Update(ref state);
 
+            // 先根据目标方向生成初始意图，再根据附近实体做软排斥修正
             new AvoidanceJob
             {
                 Layer = layer,

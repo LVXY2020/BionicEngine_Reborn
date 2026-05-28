@@ -1,6 +1,7 @@
 using Unity.Entities;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using Unity.Transforms; // 🌟 依然只保留 Unity 官方的 Transform
 using Latios;
@@ -30,9 +31,12 @@ namespace App.Combat
             // 这完全绕过了 C# params 关键字带来的隐式托管数组分配
             var builder = new EntityQueryBuilder(Allocator.Temp)
                 .WithAll<BionicShape, LocalTransform>();
-            
+
             _monsterQuery = state.GetEntityQuery(builder);
-            
+
+            // 预创建单例载体，避免运行时不断分叉新实体来存 Layer
+            state.EntityManager.CreateSingleton<Singleton>();
+
             // 用完立即释放临时内存，保持底层绝对纯净
             builder.Dispose(); 
         }
@@ -43,10 +47,12 @@ namespace App.Combat
             int count = _monsterQuery.CalculateEntityCount();
             if (count == 0) return;
 
-            var allocator = state.WorldUnmanaged.UpdateAllocator.ToAllocator;
-
-            // 1. 手动分配一块 NativeArray 来装填物理引擎需要的标准刚体
-            var bodies = new NativeArray<ColliderBody>(count, allocator, NativeArrayOptions.UninitializedMemory);
+            // 修复：UpdateAllocator 不是标准 Allocator，直接传给 NativeArray 会触发参数异常。
+            // 这里改用 TempJob 分配，OnUpdate 末尾主动 Dispose，保证安全和可预测。
+            var bodies = CollectionHelper.CreateNativeArray<ColliderBody, RewindableAllocator>(
+                count,
+                ref state.WorldUnmanaged.UpdateAllocator,
+                NativeArrayOptions.UninitializedMemory);
 
             // 2. 调度极速 Job，将自定义的 BionicShape 压扁转化为物理底层结构
             new BuildBodiesJob
@@ -54,8 +60,8 @@ namespace App.Combat
                 Bodies = bodies
             }.ScheduleParallel(_monsterQuery, state.Dependency).Complete(); 
 
-            // 3. 传入 NativeArray，并通过 out 输出 Layer
-            Physics.BuildCollisionLayer(bodies).RunImmediate(out CollisionLayer layer, allocator);
+            // 3. 传入 NativeArray，并通过 out 输出 Layer（与 UpdateAllocator 同源）
+            Physics.BuildCollisionLayer(bodies).RunImmediate(out CollisionLayer layer, state.WorldUnmanaged.UpdateAllocator.ToAllocator);
 
             // 4. 将建好的 Layer 存入单例供其他系统使用
             if (SystemAPI.TryGetSingletonEntity<Singleton>(out var entity))
